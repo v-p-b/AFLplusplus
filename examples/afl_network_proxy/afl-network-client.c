@@ -55,6 +55,8 @@ u32 __afl_map_size = MAP_SIZE;
 __thread u32 __afl_map_size = MAP_SIZE;
 #endif
 
+u8  colored = 1;
+
 /* Error reporting to forkserver controller */
 
 void send_forkserver_error(int error) {

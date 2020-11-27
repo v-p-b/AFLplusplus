@@ -44,6 +44,7 @@
   #define nullptr 0
 #endif
 
+unsigned char colored = 1;
 using namespace llvm;
 #include "afl-llvm-common.h"
 

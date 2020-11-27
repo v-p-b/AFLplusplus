@@ -50,6 +50,7 @@
 #include <set>
 #include "afl-llvm-common.h"
 
+unsigned char colored = 1;
 using namespace llvm;
 
 namespace {

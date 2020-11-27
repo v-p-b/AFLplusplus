@@ -47,6 +47,7 @@
 
 #define MAX_PARAM_COUNT 4096
 
+u8  colored = 1;
 static u8 **ld_params;              /* Parameters passed to the real 'ld'   */
 
 static u8 *afl_path = AFL_PATH;

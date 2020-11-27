@@ -22,6 +22,7 @@ extern void mock_assert(const int result, const char* const expression,
     mock_assert((int)(expression), #expression, __FILE__, __LINE__);
 
 #include "afl-prealloc.h"
+unsigned char colored = 0;
 
 /* remap exit -> assert, then use cmocka's mock_assert
     (compile with `--wrap=exit`) */

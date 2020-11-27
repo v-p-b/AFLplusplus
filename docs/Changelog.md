@@ -40,6 +40,8 @@ sending a mail to <afl-users+subscribe@googlegroups.com>.
     - print special compile time options used in help output
     - when using -c cmplog, one of the childs was not killed, fixed
     - somewhere we broke -n dumb fuzzing, fixed
+    - new env. var. AFL_NO_COLOR (or AFL_NO_COLOUR) to suppress colored
+      console output
   - instrumentation
     - We received an enhanced gcc_plugin module from AdaCore, thank you
       very much!!

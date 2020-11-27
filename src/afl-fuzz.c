@@ -191,6 +191,7 @@ static void usage(u8 *argv0, int more_help) {
       "AFL_NO_FORKSRV: run target via execve instead of using the forkserver\n"
       "AFL_NO_SNAPSHOT: do not use the snapshot feature (if the snapshot lkm is loaded)\n"
       "AFL_NO_UI: switch status screen off\n"
+      "AFL_NO_COLOR or AFL_NO_COLOUR: switch colored console output off\n"
       "AFL_PATH: path to AFL support binaries\n"
       "AFL_PYTHON_MODULE: mutate and trim inputs with the specified Python module\n"
       "AFL_QUIET: suppress forkserver status messages\n"
@@ -289,6 +290,9 @@ int main(int argc, char **argv_orig, char **envp) {
   struct timeval  tv;
   struct timezone tz;
 
+  /* early initialisation of colored for FATAL and friends */
+  if (getenv("AFL_NO_COLOR") || getenv("AFL_NO_COLOUR")) { colored = 0; }
+
   char **argv = argv_cpy_dup(argc, argv_orig);
 
   afl_state_t *afl = calloc(1, sizeof(afl_state_t));
@@ -305,7 +309,11 @@ int main(int argc, char **argv_orig, char **envp) {
   if (afl->shm.map_size) { afl->fsrv.map_size = afl->shm.map_size; }
   exit_1 = !!afl->afl_env.afl_bench_just_one;
 
-  SAYF(cCYA "afl-fuzz" VERSION cRST
+  if (colored)
+    SAYF(cCYA "afl-fuzz" VERSION cRST
+            " based on afl by Michal Zalewski and a big online community\n");
+  else
+    SAYF("afl-fuzz" VERSION 
             " based on afl by Michal Zalewski and a big online community\n");
 
   doc_path = access(DOC_PATH, F_OK) != 0 ? (u8 *)"docs" : (u8 *)DOC_PATH;
@@ -988,9 +996,15 @@ int main(int argc, char **argv_orig, char **envp) {
 
   if (strchr(argv[optind], '/') == NULL && !afl->unicorn_mode) {
 
-    WARNF(cLRD
+    if (colored)
+      WARNF(cLRD
           "Target binary called without a prefixed path, make sure you are "
           "fuzzing the right binary: " cRST "%s",
+          argv[optind]);
+    else
+      WARNF(
+          "Target binary called without a prefixed path, make sure you are "
+          "fuzzing the right binary: %s",
           argv[optind]);
 
   }
@@ -1743,18 +1757,28 @@ stop_fuzzing:
   afl->force_ui_update = 1;  // ensure the screen is reprinted
   show_stats(afl);           // print the screen one last time
 
-  SAYF(CURSOR_SHOW cLRD "\n\n+++ Testing aborted %s +++\n" cRST,
+  if (colored)
+    SAYF(CURSOR_SHOW cLRD "\n\n+++ Testing aborted %s +++\n" cRST,
+       afl->stop_soon == 2 ? "programmatically" : "by user");
+  else
+    SAYF("\n\n+++ Testing aborted %s +++\n",
        afl->stop_soon == 2 ? "programmatically" : "by user");
 
   if (afl->most_time_key == 2) {
 
-    SAYF(cYEL "[!] " cRST "Time limit was reached\n");
+    if (colored)
+      SAYF(cYEL "[!] " cRST "Time limit was reached\n");
+    else
+      SAYF("[!] Time limit was reached\n");
 
   }
 
   if (afl->most_execs_key == 2) {
 
-    SAYF(cYEL "[!] " cRST "Execution limit was reached\n");
+    if (colored)
+      SAYF(cYEL "[!] " cRST "Execution limit was reached\n");
+    else
+      SAYF("[!] Execution limit was reached\n");
 
   }
 
@@ -1763,7 +1787,13 @@ stop_fuzzing:
   if (afl->queue_cycle == 1 &&
       get_cur_time() - afl->start_time > 30 * 60 * 1000) {
 
-    SAYF("\n" cYEL "[!] " cRST
+    if (colored)
+      SAYF("\n" cYEL "[!] " cRST
+         "Stopped during the first cycle, results may be incomplete.\n"
+         "    (For info on resuming, see %s/README.md)\n",
+         doc_path);
+    else
+      SAYF("\n[!] "
          "Stopped during the first cycle, results may be incomplete.\n"
          "    (For info on resuming, see %s/README.md)\n",
          doc_path);
@@ -1771,8 +1801,13 @@ stop_fuzzing:
   }
 
   #ifdef PROFILING
-  SAYF(cYEL "[!] " cRST
+  if (colored)
+    SAYF(cYEL "[!] " cRST
             "Profiling information: %llu ms total work, %llu ns/run\n",
+       time_spent_working / 1000000,
+       time_spent_working / afl->fsrv.total_execs);
+  else
+    SAYF("[!] Profiling information: %llu ms total work, %llu ns/run\n",
        time_spent_working / 1000000,
        time_spent_working / afl->fsrv.total_execs);
   #endif
