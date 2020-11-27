@@ -48,7 +48,9 @@
 #include <set>
 #include "afl-llvm-common.h"
 
+#ifndef colored
 unsigned char colored = 1;
+#endif
 using namespace llvm;
 
 namespace {

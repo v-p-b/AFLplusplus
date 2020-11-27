@@ -36,7 +36,6 @@
   #define MESSAGES_TO_STDOUT
 #endif
 
-extern u8 colored;
 #ifdef USE_COLOR
 
   #define cBLK "\x1b[0;30m"
@@ -73,6 +72,12 @@ extern u8 colored;
   #define bgPIN "\x1b[105m"
   #define bgLCY "\x1b[106m"
   #define bgBRI "\x1b[107m"
+
+#ifdef ALWAYS_COLORED
+  #define colored 1                /* compile time decision */
+#else
+extern u8 colored;                 /* runtime decision */
+#endif
 
 #else
 
@@ -111,6 +116,7 @@ extern u8 colored;
   #define bgLCY ""
   #define bgBRI ""
 
+  #define colored 0                /* compile time decision */
 #endif                                                        /* ^USE_COLOR */
 
 /*************************
@@ -179,10 +185,12 @@ extern u8 colored;
 
 /* Show a prefixed warning. */
 
+#define IF_(iscolored)  if (iscolored)         /* so "iscolored" is evaluated */
+
 #define WARNF(x...)                            \
   do {                                         \
                                                \
-   if (colored) {                              \
+   IF_(colored) {                              \
     SAYF(cYEL "[!] " cBRI "WARNING: " cRST x); \
     SAYF(cRST "\n");                           \
    } else {                                    \
@@ -196,7 +204,7 @@ extern u8 colored;
 #define ACTF(x...)            \
   do {                        \
                               \
-   if (colored) {             \
+   IF_(colored) {             \
     SAYF(cLBL "[*] " cRST x); \
     SAYF(cRST "\n");          \
    } else {                   \
@@ -210,7 +218,7 @@ extern u8 colored;
 #define OKF(x...)             \
   do {                        \
                               \
-   if (colored) {             \
+   IF_(colored) {             \
     SAYF(cLGN "[+] " cRST x); \
     SAYF(cRST "\n");          \
    } else {                   \
@@ -224,7 +232,7 @@ extern u8 colored;
 #define BADF(x...)              \
   do {                          \
                                 \
-   if (colored) {               \
+   IF_(colored) {               \
     SAYF(cLRD "\n[-] " cRST x); \
     SAYF(cRST "\n");            \
    } else {                     \
@@ -238,7 +246,7 @@ extern u8 colored;
 #define FATAL(x...)                                                      \
   do {                                                                   \
                                                                          \
-   if (colored) {                                                        \
+   IF_(colored) {                                                        \
     SAYF(bSTOP RESET_G1 CURSOR_SHOW cRST cLRD                            \
          "\n[-] PROGRAM ABORT : " cRST x);                               \
     SAYF(cLRD "\n         Location : " cRST "%s(), %s:%u\n\n", __func__, \
@@ -257,7 +265,7 @@ extern u8 colored;
 #define ABORT(x...)                                                      \
   do {                                                                   \
                                                                          \
-   if (colored) {                                                        \
+   IF_(colored) {                                                        \
     SAYF(bSTOP RESET_G1 CURSOR_SHOW cRST cLRD                            \
          "\n[-] PROGRAM ABORT : " cRST x);                               \
     SAYF(cLRD "\n    Stop location : " cRST "%s(), %s:%u\n\n", __func__, \
@@ -277,7 +285,7 @@ extern u8 colored;
   do {                                                                 \
                                                                        \
     fflush(stdout);                                                    \
-   if (colored) {                                                      \
+   IF_(colored) {                                                      \
     SAYF(bSTOP RESET_G1 CURSOR_SHOW cRST cLRD                          \
          "\n[-]  SYSTEM ERROR : " cRST x);                             \
     SAYF(cLRD "\n    Stop location : " cRST "%s(), %s:%u\n", __func__, \

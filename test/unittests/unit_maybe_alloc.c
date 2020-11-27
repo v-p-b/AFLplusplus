@@ -21,7 +21,9 @@ extern void mock_assert(const int result, const char* const expression,
 #define assert(expression) \
     mock_assert((int)(expression), #expression, __FILE__, __LINE__);
 #include "alloc-inl.h"
+#ifndef colored
 unsigned char colored = 0;
+#endif
 
 void __wrap_exit(int status);
 /* remap exit -> assert, then use cmocka's mock_assert

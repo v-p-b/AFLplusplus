@@ -175,7 +175,9 @@
    Process".  */
 int plugin_is_GPL_compatible = 1;
 
-unsigned char  colored = 1;
+#ifndef colored
+unsigned char colored = 1;
+#endif
 namespace {
 
 static const struct pass_data afl_pass_data = {
