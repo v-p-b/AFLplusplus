@@ -43,6 +43,7 @@ typedef long double max_align_t;
 #include "config.h"
 #include "debug.h"
 
+u8 colored = 1;
 using namespace llvm;
 
 static cl::opt<bool> MarkSetOpt("markset", cl::desc("MarkSet"),

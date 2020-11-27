@@ -64,6 +64,7 @@ typedef long double max_align_t;
 #include "afl-llvm-common.h"
 #include "llvm-ngram-coverage.h"
 
+u8 colored=1;
 using namespace llvm;
 
 namespace {

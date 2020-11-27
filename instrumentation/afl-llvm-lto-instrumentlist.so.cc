@@ -49,6 +49,7 @@
 
 #include "afl-llvm-common.h"
 
+u8 colored = 1;
 using namespace llvm;
 
 namespace {
