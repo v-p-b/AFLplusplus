@@ -181,7 +181,7 @@ static inline const char * colorfilter(const char * x) {
   static char monochromestring[4096];
   char *d = monochromestring;
   int in_seq = 0;
-  if (!getenv("AFL_NO_COLOR") && !getenv("AFL_NO_COLOUR")) return x;
+  if (!getenv("AFL_NO_UI") || (!getenv("AFL_NO_COLOR") && !getenv("AFL_NO_COLOUR"))) return x;
   while(*x) {
     if (in_seq && *x == 'm') { in_seq = 0; ++x; continue; }
     if (!in_seq && *x == '\x1b') { in_seq = 1; }
