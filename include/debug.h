@@ -176,17 +176,31 @@ extern u8 colored;                 /* runtime decision */
  ************************/
 
 #if defined USE_COLOR && !defined ALWAYS_COLORED
+#include <unistd.h>
 #pragma GCC diagnostic ignored "-Wformat-security"
 static inline const char * colorfilter(const char * x) {
   static char monochromestring[4096];
   char *d = monochromestring;
   int in_seq = 0;
-  if (!getenv("AFL_NO_UI") || (!getenv("AFL_NO_COLOR") && !getenv("AFL_NO_COLOUR"))) return x;
+  static int once = 1;
+  static int disabled = 0;
+  if (once) {
+    /* when there is no tty -> we always want filtering
+     * when AFL_NO_UI is set filtering depends on AFL_NO_COLOR
+     * otherwise we want always colors
+     */
+    disabled = isatty(2) && (!getenv("AFL_NO_UI") || (!getenv("AFL_NO_COLOR") && !getenv("AFL_NO_COLOUR")));
+    once = 0;
+  }
+  if (disabled) return x;
   while(*x) {
-    if (in_seq && *x == 'm') { in_seq = 0; ++x; continue; }
-    if (!in_seq && *x == '\x1b') { in_seq = 1; }
-    if (!in_seq) {
-      *d++ = *x;
+    if (in_seq && *x == 'm') {
+      in_seq = 0;
+    } else {
+      if (!in_seq && *x == '\x1b') { in_seq = 1; }
+      if (!in_seq) {
+        *d++ = *x;
+      }
     }
     ++x;
   }
