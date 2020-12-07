@@ -89,10 +89,6 @@ static u32 debug = 0;
 
 // END STEP 1
 
-#ifndef colored
-unsigned char colored;
-#endif
-
 typedef struct library_list {
 
   u8 *name;

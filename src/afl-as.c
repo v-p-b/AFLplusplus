@@ -53,9 +53,6 @@
 #include <sys/wait.h>
 #include <sys/time.h>
 
-#ifndef colored
-unsigned char colored = 1;
-#endif
 static u8 **as_params;              /* Parameters passed to the real 'as'   */
 
 static u8 *input_file;              /* Originally specified input file      */

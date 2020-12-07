@@ -298,10 +298,7 @@ int main(int argc, char **argv_orig, char **envp) {
   struct timeval  tv;
   struct timezone tz;
 
-#if defined USE_COLOR && !defined ALWAYS_COLORED
-  /* early initialisation of colored for FATAL and friends */
-  if (getenv("AFL_NO_COLOR") || getenv("AFL_NO_COLOUR")) { colored = 0; }
-#elif defined ALWAYS_COLORED
+#if defined USE_COLOR && defined ALWAYS_COLORED
   if (getenv("AFL_NO_COLOR") || getenv("AFL_NO_COLOUR")) {
      WARNF("Setting AFL_NO_COLOR has no effect (colors are configured on at compile time)");
   }
@@ -323,11 +320,7 @@ int main(int argc, char **argv_orig, char **envp) {
   if (afl->shm.map_size) { afl->fsrv.map_size = afl->shm.map_size; }
   exit_1 = !!afl->afl_env.afl_bench_just_one;
 
-  if (colored)
-    SAYF(cCYA "afl-fuzz" VERSION cRST
-            " based on afl by Michal Zalewski and a big online community\n");
-  else
-    SAYF("afl-fuzz" VERSION 
+  SAYF(cCYA "afl-fuzz" VERSION cRST
             " based on afl by Michal Zalewski and a big online community\n");
 
   doc_path = access(DOC_PATH, F_OK) != 0 ? (u8 *)"docs" : (u8 *)DOC_PATH;
@@ -1010,15 +1003,9 @@ int main(int argc, char **argv_orig, char **envp) {
 
   if (strchr(argv[optind], '/') == NULL && !afl->unicorn_mode) {
 
-    if (colored)
-      WARNF(cLRD
+    WARNF(cLRD
           "Target binary called without a prefixed path, make sure you are "
           "fuzzing the right binary: " cRST "%s",
-          argv[optind]);
-    else
-      WARNF(
-          "Target binary called without a prefixed path, make sure you are "
-          "fuzzing the right binary: %s",
           argv[optind]);
 
   }
@@ -1771,28 +1758,18 @@ stop_fuzzing:
   afl->force_ui_update = 1;  // ensure the screen is reprinted
   show_stats(afl);           // print the screen one last time
 
-  if (colored)
-    SAYF(CURSOR_SHOW cLRD "\n\n+++ Testing aborted %s +++\n" cRST,
-       afl->stop_soon == 2 ? "programmatically" : "by user");
-  else
-    SAYF("\n\n+++ Testing aborted %s +++\n",
+  SAYF(CURSOR_SHOW cLRD "\n\n+++ Testing aborted %s +++\n" cRST,
        afl->stop_soon == 2 ? "programmatically" : "by user");
 
   if (afl->most_time_key == 2) {
 
-    if (colored)
-      SAYF(cYEL "[!] " cRST "Time limit was reached\n");
-    else
-      SAYF("[!] Time limit was reached\n");
+    SAYF(cYEL "[!] " cRST "Time limit was reached\n");
 
   }
 
   if (afl->most_execs_key == 2) {
 
-    if (colored)
-      SAYF(cYEL "[!] " cRST "Execution limit was reached\n");
-    else
-      SAYF("[!] Execution limit was reached\n");
+    SAYF(cYEL "[!] " cRST "Execution limit was reached\n");
 
   }
 
@@ -1801,13 +1778,7 @@ stop_fuzzing:
   if (afl->queue_cycle == 1 &&
       get_cur_time() - afl->start_time > 30 * 60 * 1000) {
 
-    if (colored)
-      SAYF("\n" cYEL "[!] " cRST
-         "Stopped during the first cycle, results may be incomplete.\n"
-         "    (For info on resuming, see %s/README.md)\n",
-         doc_path);
-    else
-      SAYF("\n[!] "
+    SAYF("\n" cYEL "[!] " cRST
          "Stopped during the first cycle, results may be incomplete.\n"
          "    (For info on resuming, see %s/README.md)\n",
          doc_path);
@@ -1815,13 +1786,8 @@ stop_fuzzing:
   }
 
   #ifdef PROFILING
-  if (colored)
-    SAYF(cYEL "[!] " cRST
+  SAYF(cYEL "[!] " cRST
             "Profiling information: %llu ms total work, %llu ns/run\n",
-       time_spent_working / 1000000,
-       time_spent_working / afl->fsrv.total_execs);
-  else
-    SAYF("[!] Profiling information: %llu ms total work, %llu ns/run\n",
        time_spent_working / 1000000,
        time_spent_working / afl->fsrv.total_execs);
   #endif

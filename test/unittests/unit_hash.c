@@ -23,9 +23,6 @@ extern void mock_assert(const int result, const char* const expression,
 
 #include "afl-fuzz.h"
 #include "hash.h"
-#ifndef colored
-unsigned char colored = 0;
-#endif
 
 /* remap exit -> assert, then use cmocka's mock_assert
     (compile with `--wrap=exit`) */

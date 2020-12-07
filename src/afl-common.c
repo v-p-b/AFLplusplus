@@ -45,9 +45,6 @@
 u8  be_quiet = 0;
 u8 *doc_path = "";
 u8  last_intr = 0;
-#ifndef colored
-unsigned char colored = 1;
-#endif
 
 void detect_file_args(char **argv, u8 *prog_in, u8 *use_stdin) {
 

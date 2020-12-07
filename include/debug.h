@@ -175,28 +175,64 @@ extern u8 colored;                 /* runtime decision */
  * Debug & error macros *
  ************************/
 
-/* Just print stuff to the appropriate stream. */
-
-#ifdef MESSAGES_TO_STDOUT
-  #define SAYF(x...) printf(x)
+#if defined USE_COLOR && !defined ALWAYS_COLORED
+#pragma GCC diagnostic ignored "-Wformat-security"
+static inline const char * colorfilter(const char * x) {
+  static char monochromestring[4096];
+  char *d = monochromestring;
+  int in_seq = 0;
+  if (!getenv("AFL_NO_COLOR") && !getenv("AFL_NO_COLOUR")) return x;
+  while(*x) {
+    if (in_seq && *x == 'm') { in_seq = 0; ++x; continue; }
+    if (!in_seq && *x == '\x1b') { in_seq = 1; }
+    if (!in_seq) {
+      *d++ = *x;
+    }
+    ++x;
+  }
+  *d = '\0';
+  return monochromestring;
+}
 #else
-  #define SAYF(x...) fprintf(stderr, x)
+#define colorfilter(x) x /* no filtering necessary */
+#endif
+
+/* macro magic to transform the first parameter to SAYF
+ * through colorfilter which strips coloring */
+#define GET_MACRO(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,\
+_11,_12,_13,_14,_15,_16,_17,_18,_19,_20,\
+_21,_22,_23,_24,_25,_26,_27,_28,_29,_30,\
+_31,_32,_33,_34,_35,_36,_37,_38,_39,_40,\
+NAME,...) NAME
+
+#define SAYF(...) GET_MACRO(__VA_ARGS__, \
+SAYF_N, SAYF_N, SAYF_N, SAYF_N, SAYF_N, \
+SAYF_N, SAYF_N, SAYF_N, SAYF_N, SAYF_N, \
+SAYF_N, SAYF_N, SAYF_N, SAYF_N, SAYF_N, \
+SAYF_N, SAYF_N, SAYF_N, SAYF_N, SAYF_N, \
+SAYF_N, SAYF_N, SAYF_N, SAYF_N, SAYF_N, \
+SAYF_N, SAYF_N, SAYF_N, SAYF_N, SAYF_N, \
+SAYF_N, SAYF_N, SAYF_N, SAYF_N, SAYF_N, \
+SAYF_N, SAYF_N, SAYF_N, SAYF_N, SAYF_1)(__VA_ARGS__)
+
+#define SAYF_1(x)  MY_SAYF(colorfilter(x))
+#define SAYF_N(x,...)  MY_SAYF(colorfilter(x), __VA_ARGS__)
+
+/* Just print stuff to the appropriate stream. */
+#ifdef MESSAGES_TO_STDOUT
+  #define MY_SAYF(x...) printf(x)
+#else
+  #define MY_SAYF(x...) fprintf(stderr, x)
 #endif                                               /* ^MESSAGES_TO_STDOUT */
 
 /* Show a prefixed warning. */
 
-#define IF_(iscolored)  if (iscolored)         /* so "iscolored" is evaluated */
-
 #define WARNF(x...)                            \
   do {                                         \
                                                \
-   IF_(colored) {                              \
     SAYF(cYEL "[!] " cBRI "WARNING: " cRST x); \
     SAYF(cRST "\n");                           \
-   } else {                                    \
-    SAYF("[!] " "WARNING: " x);                \
-    SAYF("\n");                                \
-   }                                           \
+                                               \
   } while (0)
 
 /* Show a prefixed "doing something" message. */
@@ -204,13 +240,9 @@ extern u8 colored;                 /* runtime decision */
 #define ACTF(x...)            \
   do {                        \
                               \
-   IF_(colored) {             \
     SAYF(cLBL "[*] " cRST x); \
     SAYF(cRST "\n");          \
-   } else {                   \
-    SAYF("[*] " x);           \
-    SAYF("\n");               \
-   }                          \
+                              \
   } while (0)
 
 /* Show a prefixed "success" message. */
@@ -218,13 +250,9 @@ extern u8 colored;                 /* runtime decision */
 #define OKF(x...)             \
   do {                        \
                               \
-   IF_(colored) {             \
     SAYF(cLGN "[+] " cRST x); \
     SAYF(cRST "\n");          \
-   } else {                   \
-    SAYF("[+] " x);           \
-    SAYF("\n");               \
-   }                          \
+                              \
   } while (0)
 
 /* Show a prefixed fatal error message (not used in afl). */
@@ -232,13 +260,9 @@ extern u8 colored;                 /* runtime decision */
 #define BADF(x...)              \
   do {                          \
                                 \
-   IF_(colored) {               \
     SAYF(cLRD "\n[-] " cRST x); \
     SAYF(cRST "\n");            \
-   } else {                     \
-    SAYF("\n[-] " x);           \
-    SAYF("\n");                 \
-   }                            \
+                                \
   } while (0)
 
 /* Die with a verbose non-OS fatal error message. */
@@ -246,17 +270,11 @@ extern u8 colored;                 /* runtime decision */
 #define FATAL(x...)                                                      \
   do {                                                                   \
                                                                          \
-   IF_(colored) {                                                        \
     SAYF(bSTOP RESET_G1 CURSOR_SHOW cRST cLRD                            \
          "\n[-] PROGRAM ABORT : " cRST x);                               \
     SAYF(cLRD "\n         Location : " cRST "%s(), %s:%u\n\n", __func__, \
          __FILE__, __LINE__);                                            \
-   } else {                                                              \
-    SAYF("\n[-] PROGRAM ABORT : " x);                                    \
-    SAYF("\n         Location : %s(), %s:%u\n\n", __func__,              \
-         __FILE__, __LINE__);                                            \
-   }                                                                     \
-   exit(1);                                                              \
+    exit(1);                                                             \
                                                                          \
   } while (0)
 
@@ -265,17 +283,11 @@ extern u8 colored;                 /* runtime decision */
 #define ABORT(x...)                                                      \
   do {                                                                   \
                                                                          \
-   IF_(colored) {                                                        \
     SAYF(bSTOP RESET_G1 CURSOR_SHOW cRST cLRD                            \
          "\n[-] PROGRAM ABORT : " cRST x);                               \
     SAYF(cLRD "\n    Stop location : " cRST "%s(), %s:%u\n\n", __func__, \
          __FILE__, __LINE__);                                            \
-   } else {                                                              \
-    SAYF("\n[-] PROGRAM ABORT : " x);                                    \
-    SAYF("\n    Stop location : %s(), %s:%u\n\n", __func__,              \
-         __FILE__, __LINE__);                                            \
-   }                                                                     \
-   abort();                                                              \
+    abort();                                                             \
                                                                          \
   } while (0)
 
@@ -285,19 +297,12 @@ extern u8 colored;                 /* runtime decision */
   do {                                                                 \
                                                                        \
     fflush(stdout);                                                    \
-   IF_(colored) {                                                      \
     SAYF(bSTOP RESET_G1 CURSOR_SHOW cRST cLRD                          \
          "\n[-]  SYSTEM ERROR : " cRST x);                             \
     SAYF(cLRD "\n    Stop location : " cRST "%s(), %s:%u\n", __func__, \
          __FILE__, __LINE__);                                          \
     SAYF(cLRD "       OS message : " cRST "%s\n", strerror(errno));    \
-   } else {                                                            \
-    SAYF("\n[-]  SYSTEM ERROR : " x);                                  \
-    SAYF("\n    Stop location : %s(), %s:%u\n", __func__,              \
-         __FILE__, __LINE__);                                          \
-    SAYF("       OS message : %s\n", strerror(errno));                 \
-   }                                                                   \
-   exit(1);                                                            \
+    exit(1);                                                           \
                                                                        \
   } while (0)
 

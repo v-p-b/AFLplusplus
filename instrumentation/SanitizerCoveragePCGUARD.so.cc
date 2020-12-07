@@ -47,9 +47,6 @@
 #include "debug.h"
 #include "afl-llvm-common.h"
 
-#ifndef colored
-unsigned char colored = 1;
-#endif
 namespace llvm {
 
 /// This is the ModuleSanitizerCoverage pass used in the new pass manager. The
