@@ -37,11 +37,11 @@
  ******************************************************/
 
 /* console output colors: There are three ways to configure its behavior
- * 1. default: defined USE_COLOR && !defined ALWAYS_COLORED
+ * 1. default: colored outputs fixed on: defined USE_COLOR && defined ALWAYS_COLORED 
+ *    The env var. AFL_NO_COLOR will have no effect
+ * 2. defined USE_COLOR && !defined ALWAYS_COLORED
  *    -> depending on env var AFL_NO_COLOR=1 colors can be switched off
  *    at run-time. Default is to use colors.
- * 2. colored outputs fixed on: defined USE_COLOR && defined ALWAYS_COLORED 
- *    The env var. AFL_NO_COLOR will have no effect
  * 3. colored outputs fixed off: !defined USE_COLOR
  *    The env var. AFL_NO_COLOR will have no effect
 */
@@ -53,7 +53,8 @@
 
 #ifdef USE_COLOR
 /* Comment in to always enable terminal colors */
-/*#define ALWAYS_COLORED  1 */
+/* Comment out to enable runtime controlled terminal colors via AFL_NO_COLOR */
+#define ALWAYS_COLORED  1
 #endif
 
 /* StatsD config
