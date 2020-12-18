@@ -41,7 +41,7 @@ sending a mail to <afl-users+subscribe@googlegroups.com>.
     - when using -c cmplog, one of the childs was not killed, fixed
     - somewhere we broke -n dumb fuzzing, fixed
     - new env. var. AFL_NO_COLOR (or AFL_NO_COLOUR) to suppress colored
-      console output
+      console output (when configured with USE_COLOR and not ALWAYS_COLORED)
   - instrumentation
     - We received an enhanced gcc_plugin module from AdaCore, thank you
       very much!!

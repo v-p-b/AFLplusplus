@@ -54,7 +54,7 @@
 #ifdef USE_COLOR
 /* Comment in to always enable terminal colors */
 /* Comment out to enable runtime controlled terminal colors via AFL_NO_COLOR */
-#define ALWAYS_COLORED  1
+/*#define ALWAYS_COLORED  1*/
 #endif
 
 /* StatsD config

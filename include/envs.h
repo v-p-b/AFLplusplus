@@ -101,8 +101,10 @@ static char *afl_environment_variables[] = {
     "AFL_LLVM_LTO_DONTWRITEID",
     "AFL_NO_ARITH",
     "AFL_NO_BUILTIN",
+#if defined USE_COLOR && ! defined ALWAYS_COLORED
     "AFL_NO_COLOR",
     "AFL_NO_COLOUR",
+#endif
     "AFL_NO_CPU_RED",
     "AFL_NO_FORKSRV",
     "AFL_NO_UI",

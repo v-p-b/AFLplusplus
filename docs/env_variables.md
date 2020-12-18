@@ -379,7 +379,7 @@ checks or alter some of the more exotic semantics of the tool:
     output from afl-fuzz is redirected to a file or to a pipe.
 
   - Setting `AFL_NO_COLOR` or `AFL_NO_COLOUR` will omit control sequences for
-    coloring console output.
+    coloring console output when configured with USE_COLOR and not ALWAYS_COLORED.
 
   - Setting `AFL_FORCE_UI` will force painting the UI on the screen even if
     no valid terminal was detected (for virtual consoles)
