@@ -172,11 +172,9 @@
 #include <unistd.h>
 #pragma GCC diagnostic ignored "-Wformat-security"
 static inline const char * colorfilter(const char * x) {
-  static char monochromestring[4096];
-  char *d = monochromestring;
-  int in_seq = 0;
   static int once = 1;
   static int disabled = 0;
+
   if (once) {
     /* when there is no tty -> we always want filtering
      * when AFL_NO_UI is set filtering depends on AFL_NO_COLOR
@@ -185,7 +183,12 @@ static inline const char * colorfilter(const char * x) {
     disabled = isatty(2) && (!getenv("AFL_NO_UI") || (!getenv("AFL_NO_COLOR") && !getenv("AFL_NO_COLOUR")));
     once = 0;
   }
-  if (disabled) return x;
+  if (likely(disabled)) return x;
+
+  static char monochromestring[4096];
+  char *d = monochromestring;
+  int in_seq = 0;
+
   while(*x) {
     if (in_seq && *x == 'm') {
       in_seq = 0;
@@ -197,6 +200,7 @@ static inline const char * colorfilter(const char * x) {
     }
     ++x;
   }
+
   *d = '\0';
   return monochromestring;
 }
