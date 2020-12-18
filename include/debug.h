@@ -73,12 +73,6 @@
   #define bgLCY "\x1b[106m"
   #define bgBRI "\x1b[107m"
 
-#ifdef ALWAYS_COLORED
-  #define colored 1                /* compile time decision */
-#else
-extern u8 colored;                 /* runtime decision */
-#endif
-
 #else
 
   #define cBLK ""
@@ -116,7 +110,6 @@ extern u8 colored;                 /* runtime decision */
   #define bgLCY ""
   #define bgBRI ""
 
-  #define colored 0                /* compile time decision */
 #endif                                                        /* ^USE_COLOR */
 
 /*************************
