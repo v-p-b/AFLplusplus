@@ -1759,7 +1759,8 @@ int main(int argc, char **argv_orig, char **envp) {
       u32 entry = 0;
       while (entry < afl->queued_paths) {
         struct queue_entry *q = afl->queue_buf[entry];
-        printf("entry=%u name=%s disabled=%s len=%u exec_us=%u bitmap_size=%u weight=%f perf_score=%f\n", entry++, q->fname, q->disabled ? "true" : "false", q->len, q->exec_us, q->bitmap_size, q->weight, q->perf_score);
+        printf("entry=%u name=%s variable=%s disabled=%s len=%u exec_us=%u bitmap_size=%u tops=%u weight=%f perf_score=%f\n",
+        entry++, q->fname, q->var_behavior ? "true" : "false", q->disabled ? "true" : "false", q->len, q->exec_us, q->bitmap_size, q->tc_ref, q->weight, q->perf_score);
       
       
       }
