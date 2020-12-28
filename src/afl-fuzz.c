@@ -1754,7 +1754,15 @@ int main(int argc, char **argv_orig, char **envp) {
 
       }
 
-      skipped_fuzz = fuzz_one(afl);
+      //skipped_fuzz = fuzz_one(afl);
+      afl->stop_soon = 2;
+      u32 entry = 0;
+      while (entry < afl->queued_paths) {
+        struct queue_entry *q = afl->queue_buf[entry];
+        printf("entry=%u name=%s disabled=%s len=%u exec_us=%u bitmap_size=%u weight=%f perf_score=%f\n", entry++, q->fname, q->disabled ? "true" : "false", q->len, q->exec_us, q->bitmap_size, q->weight, q->perf_score);
+      
+      
+      }
 
       if (unlikely(!afl->stop_soon && exit_1)) { afl->stop_soon = 2; }
 
@@ -1790,8 +1798,8 @@ int main(int argc, char **argv_orig, char **envp) {
 stop_fuzzing:
 
   write_stats_file(afl, 0, 0, 0);
-  afl->force_ui_update = 1;  // ensure the screen is reprinted
-  show_stats(afl);           // print the screen one last time
+  //afl->force_ui_update = 1;  // ensure the screen is reprinted
+  //show_stats(afl);           // print the screen one last time
 
   SAYF(CURSOR_SHOW cLRD "\n\n+++ Testing aborted %s +++\n" cRST,
        afl->stop_soon == 2 ? "programmatically" : "by user");
