@@ -65,6 +65,8 @@ fuzz_run_target(afl_state_t *afl, afl_forkserver_t *fsrv, u32 timeout) {
   time_spent_start = (spec.tv_sec * 1000000000) + spec.tv_nsec;
 #endif
 
+  bitsmap_size = count_bits(afl, fsrv->trace_bits);
+
   return res;
 
 }
@@ -366,6 +368,9 @@ u8 calibrate_case(afl_state_t *afl, struct queue_entry *q, u8 *use_mem,
     write_to_testcase(afl, use_mem, q->len);
 
     fault = fuzz_run_target(afl, &afl->fsrv, use_tmout);
+
+    if (unlikely(!q->bitsmap_size)) q->bitsmap_size = bitsmap_size;
+
 
     /* afl->stop_soon is set by the handler for Ctrl+C. When it's pressed,
        we want to bail out quickly. */
