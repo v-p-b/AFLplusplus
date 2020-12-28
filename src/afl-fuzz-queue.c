@@ -42,28 +42,22 @@ inline u32 select_next_queue_entry(afl_state_t *afl) {
 
 }
 
-double compute_weight(afl_state_t *afl, struct queue_entry *q,
+inline double compute_weight(afl_state_t *afl, struct queue_entry *q,
                       double avg_exec_us, double avg_bitmap_size) {
 
   u32 hits;
+  double weight = 1.0;
 
   if (likely(afl->schedule >= FAST && afl->schedule <= RARE)) {
 
     hits = afl->n_fuzz[q->n_fuzz_entry];
-    if (hits == 0) { hits = 1; }
-
-  } else {
-
-    hits = 1;
+    if (hits) { weight /= (log10(hits) + 1); }
 
   }
 
-  double weight = 1.0;
-  weight *= avg_exec_us / q->exec_us;
-  weight *= log(q->bitmap_size) / avg_bitmap_size;
-  weight /= log10(hits) + 1;
-
-  if (q->favored) weight *= 5;
+  weight *= (avg_exec_us / q->exec_us);
+  weight *= ((q->bitmap_size / avg_bitmap_size) * 3);
+  if (unlikely(q->favored)) weight *= 2;
 
   return weight;
 
@@ -101,7 +95,7 @@ void create_alias_table(afl_state_t *afl) {
 
       struct queue_entry *q = afl->queue_buf[i];
       avg_exec_us += q->exec_us;
-      avg_bitmap_size += log(q->bitmap_size);
+      avg_bitmap_size += q->bitmap_size;
 
     }
 
@@ -116,10 +110,9 @@ void create_alias_table(afl_state_t *afl) {
 
         q->weight = compute_weight(afl, q, avg_exec_us, avg_bitmap_size);
         q->perf_score = calculate_score(afl, q);
+        sum += q->weight;
 
       }
-
-      sum += q->weight;
 
     }
 
