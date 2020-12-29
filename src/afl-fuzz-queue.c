@@ -43,9 +43,10 @@ inline u32 select_next_queue_entry(afl_state_t *afl) {
 }
 
 inline double compute_weight(afl_state_t *afl, struct queue_entry *q,
-                      double avg_exec_us, double avg_bitmap_size) {
+                             double avg_exec_us, double avg_bitmap_size,
+                             double avg_top_size) {
 
-  u32 hits;
+  u32    hits;
   double weight = 1.0;
 
   if (likely(afl->schedule >= FAST && afl->schedule <= RARE)) {
@@ -56,8 +57,9 @@ inline double compute_weight(afl_state_t *afl, struct queue_entry *q,
   }
 
   weight *= (avg_exec_us / q->exec_us);
-  weight *= ((q->bitmap_size / avg_bitmap_size) * 3);
-  if (unlikely(q->favored)) weight *= 2;
+  weight *= (q->bitmap_size / avg_bitmap_size);
+  weight *= (q->tc_ref / avg_top_size);
+  if (unlikely(q->favored)) weight *= 5;
 
   return weight;
 
@@ -67,7 +69,7 @@ inline double compute_weight(afl_state_t *afl, struct queue_entry *q,
 
 void create_alias_table(afl_state_t *afl) {
 
-  u32    n = afl->queued_paths, i = 0, a, g;
+  u32    n = afl->queued_paths, i = 0, a, g, used_paths = 0;
   double sum = 0;
 
   afl->alias_table =
@@ -91,16 +93,24 @@ void create_alias_table(afl_state_t *afl) {
 
     double avg_exec_us = 0.0;
     double avg_bitmap_size = 0.0;
+    double avg_top_size = 0.0;
     for (i = 0; i < n; i++) {
 
       struct queue_entry *q = afl->queue_buf[i];
-      avg_exec_us += q->exec_us;
-      avg_bitmap_size += q->bitmap_size;
+      if (likely(!q->disabled)) {
+
+        avg_exec_us += q->exec_us;
+        avg_bitmap_size += q->bitmap_size;
+        avg_top_size += q->tc_ref;
+        ++used_paths;
+
+      }
 
     }
 
-    avg_exec_us /= afl->queued_paths;
-    avg_bitmap_size /= afl->queued_paths;
+    avg_exec_us /= used_paths;
+    avg_bitmap_size /= used_paths;
+    avg_top_size /= used_paths;
 
     for (i = 0; i < n; i++) {
 
@@ -108,7 +118,8 @@ void create_alias_table(afl_state_t *afl) {
 
       if (!q->disabled) {
 
-        q->weight = compute_weight(afl, q, avg_exec_us, avg_bitmap_size);
+        q->weight =
+            compute_weight(afl, q, avg_exec_us, avg_bitmap_size, avg_top_size);
         q->perf_score = calculate_score(afl, q);
         sum += q->weight;
 
