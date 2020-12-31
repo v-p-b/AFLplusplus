@@ -86,6 +86,10 @@
 
 #define MEM_LIMIT_UNICORN 0
 
+/* Default memory limit when running in Xen mode (MB): */
+
+#define MEM_LIMIT_XEN 750
+
 /* Number of calibration cycles per every new test case (and for test
    cases that show variable behavior): */
 

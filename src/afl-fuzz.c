@@ -104,7 +104,8 @@ static void usage(u8 *argv0, int more_help) {
       "  -Q            - use binary-only instrumentation (QEMU mode)\n"
       "  -U            - use unicorn-based instrumentation (Unicorn mode)\n"
       "  -W            - use qemu-based instrumentation with Wine (Wine "
-      "mode)\n\n"
+      "mode)\n"
+      "  -X            - use virtual machine instrumentation (Xen mode)\n\n"
 
       "Mutator settings:\n"
       "  -D            - enable deterministic fuzzing (once per queue entry)\n"
@@ -326,7 +327,7 @@ int main(int argc, char **argv_orig, char **envp) {
 
   while ((opt = getopt(
               argc, argv,
-              "+b:c:i:I:o:f:F:m:t:T:dDnCB:S:M:x:QNUWe:p:s:V:E:L:hRP:Z")) > 0) {
+              "+b:c:i:I:o:f:F:m:t:T:dDnCB:S:M:x:QNUWe:p:s:V:E:L:hRP:ZX")) > 0) {
 
     switch (opt) {
 
@@ -720,6 +721,15 @@ int main(int argc, char **argv_orig, char **envp) {
         afl->unicorn_mode = 1;
 
         if (!mem_limit_given) { afl->fsrv.mem_limit = MEM_LIMIT_UNICORN; }
+
+        break;
+
+    case 'X':                                           /* Xen mode */
+
+        if (afl->fsrv.xen_mode) { FATAL("Multiple -X options not supported"); }
+        afl->fsrv.xen_mode = 1;
+
+        if (!mem_limit_given) { afl->fsrv.mem_limit = MEM_LIMIT_XEN; }
 
         break;
 

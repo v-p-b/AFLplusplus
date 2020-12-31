@@ -643,6 +643,7 @@ static void usage(u8 *argv0) {
       "  -t msec       - timeout for each run (none)\n"
       "  -m megs       - memory limit for child process (%d MB)\n"
       "  -Q            - use binary-only instrumentation (QEMU mode)\n"
+      "  -X            - use virtual machine instrumentation (Xen mode)\n"
       "  -U            - use Unicorn-based instrumentation (Unicorn mode)\n"
       "  -W            - use qemu-based instrumentation with Wine (Wine mode)\n"
       "                  (Not necessary, here for consistency with other afl-* "
@@ -707,7 +708,7 @@ int main(int argc, char **argv_orig, char **envp) {
 
   if (getenv("AFL_QUIET") != NULL) { be_quiet = 1; }
 
-  while ((opt = getopt(argc, argv, "+i:o:f:m:t:A:eqCZQUWbcrh")) > 0) {
+  while ((opt = getopt(argc, argv, "+i:o:f:m:t:A:eqCZQXUWbcrh")) > 0) {
 
     switch (opt) {
 
@@ -842,6 +843,13 @@ int main(int argc, char **argv_orig, char **envp) {
         if (fsrv->qemu_mode) { FATAL("Multiple -Q options not supported"); }
 
         fsrv->qemu_mode = 1;
+        break;
+
+      case 'X':
+
+        if (fsrv->xen_mode) { FATAL("Multiple -X options not supported"); }
+
+        fsrv->xen_mode = 1;
         break;
 
       case 'U':

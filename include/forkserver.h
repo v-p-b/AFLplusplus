@@ -76,6 +76,8 @@ typedef struct afl_forkserver {
   bool use_fauxsrv;                     /* Fauxsrv for non-forking targets? */
 
   bool qemu_mode;                       /* if running in qemu mode or not   */
+  
+  bool xen_mode;                        /* if running in Xen mode or not    */
 
   bool use_stdin;                       /* use stdin for sending data       */
 
